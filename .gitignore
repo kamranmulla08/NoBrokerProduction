@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local databases
+db.sqlite3
+
+# Django generated/uploaded files
+media/
+staticfiles/
+
+# Node / frontend
+**/node_modules/
+**/dist/
+**/.vite/
+
+# Local test/staging artifacts
+test_images/
+test_property.png
+test_property.png.png
+audit-fixes-staged.patch
+safe-frontend-staging/
+
+nobroker-frontend/backup-before-staging/
+nobroker-frontend/deployment-temp/
+nobroker-frontend/api-deployment-fix.patch
