@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+import dj_database_url
 from dotenv import load_dotenv
 
 
@@ -25,10 +26,14 @@ SECRET_KEY = os.getenv(
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
+
 ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "nobroker-backend-iroo.onrender.com",
+    host.strip()
+    for host in os.getenv(
+        "ALLOWED_HOSTS",
+        "127.0.0.1,localhost",
+    ).split(",")
+    if host.strip()
 ]
 
 
@@ -37,10 +42,8 @@ ALLOWED_HOSTS = [
 # ============================================================
 
 INSTALLED_APPS = [
-    # Daphne / ASGI
     "daphne",
 
-    # Django built-in apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,17 +51,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # CORS
     "corsheaders",
-
-    # Django Channels
     "channels",
-
-    # Django REST Framework
     "rest_framework",
     "rest_framework_simplejwt",
 
-    # Project apps
     "apps.users",
     "apps.properties",
     "apps.chat",
@@ -72,41 +69,52 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
 
-    # CORS
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
 # ============================================================
-# CORS CONFIGURATION
+# CORS
 # ============================================================
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://nobroker.pages.dev",
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
+
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
 ]
 
 
 # ============================================================
-# URL CONFIGURATION
+# URL / TEMPLATES
 # ============================================================
 
 ROOT_URLCONF = "config.urls"
 
-
-# ============================================================
-# TEMPLATES
-# ============================================================
 
 TEMPLATES = [
     {
@@ -137,31 +145,28 @@ ASGI_APPLICATION = "config.asgi.application"
 # DATABASE
 # ============================================================
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv(
-            "DB_NAME",
-            "nobroker_db",
-        ),
-        "USER": os.getenv(
-            "DB_USER",
-            "nobroker_user",
-        ),
-        "PASSWORD": os.getenv(
-            "DB_PASSWORD",
-            "",
-        ),
-        "HOST": os.getenv(
-            "DB_HOST",
-            "127.0.0.1",
-        ),
-        "PORT": os.getenv(
-            "DB_PORT",
-            "5433",
-        ),
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "nobroker_db"),
+            "USER": os.getenv("DB_USER", "nobroker_user"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("DB_PORT", "5433"),
+        }
+    }
 
 
 # ============================================================
@@ -180,25 +185,25 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": (
             "django.contrib.auth.password_validation."
             "UserAttributeSimilarityValidator"
-        ),
+        )
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation."
             "MinimumLengthValidator"
-        ),
+        )
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation."
             "CommonPasswordValidator"
-        ),
+        )
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation."
             "NumericPasswordValidator"
-        ),
+        )
     },
 ]
 
@@ -220,9 +225,22 @@ USE_TZ = True
 # STATIC FILES
 # ============================================================
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 
 # ============================================================
@@ -256,14 +274,16 @@ REST_FRAMEWORK = {
 
 
 # ============================================================
-# JWT CONFIGURATION
+# JWT
 # ============================================================
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
+
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -276,16 +296,47 @@ LOGIN_URL = "/api/users/login/"
 
 
 # ============================================================
-# DJANGO CHANNELS + REDIS
+# CHANNELS / REDIS
 # ============================================================
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [
-                ("127.0.0.1", 6380),
-            ],
-        },
-    },
-}
+REDIS_URL = os.getenv("REDIS_URL")
+
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+            },
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [
+                    ("127.0.0.1", 6380),
+                ],
+            },
+        }
+    }
+
+
+# ============================================================
+# PRODUCTION SECURITY
+# ============================================================
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
+
+SESSION_COOKIE_SECURE = not DEBUG
+
+CSRF_COOKIE_SECURE = not DEBUG
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_BROWSER_XSS_FILTER = True
