@@ -1,0 +1,50 @@
+services:
+
+  postgres:
+    image: postgres:18
+    container_name: nobroker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nobroker_db
+      POSTGRES_USER: nobroker_user
+      POSTGRES_PASSWORD: nobroker_docker_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nobroker_user -d nobroker_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: nobroker-redis-compose
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nobroker-backend
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: docker-development-secret-change-me
+      DEBUG: "True"
+      DATABASE_URL: postgresql://nobroker_user:nobroker_docker_password@postgres:5432/nobroker_db
+      REDIS_URL: redis://redis:6379/0
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080
+      CSRF_TRUSTED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
+  redis_data:

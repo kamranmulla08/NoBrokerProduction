@@ -1,16 +1,12 @@
-
 import { useEffect, useState } from "react";
 import AuthContext from "./AuthContextValue";
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://nobroker-backend-iroo.onrender.com").replace(/\/$/, "");
+import { API_BASE_URL } from "../services/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchCurrentUser = async () => {
-    console.log("AuthContext is running");
-
     const token = localStorage.getItem("access_token");
 
     if (!token) {
@@ -20,13 +16,16 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/me/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/users/me/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         console.log(
@@ -35,7 +34,6 @@ export function AuthProvider({ children }) {
         );
 
         setUser(null);
-        setLoading(false);
         return;
       }
 
@@ -43,7 +41,6 @@ export function AuthProvider({ children }) {
 
       console.log("Logged-in user:", data);
 
-      // /me/ returns the user inside the "user" field
       setUser(data.user);
     } catch (error) {
       console.error("Error loading current user:", error);
@@ -57,8 +54,6 @@ export function AuthProvider({ children }) {
     let cancelled = false;
 
     const loadUser = async () => {
-      console.log("AuthContext is running");
-
       const token = localStorage.getItem("access_token");
 
       if (!token) {
@@ -90,6 +85,7 @@ export function AuthProvider({ children }) {
           if (!cancelled) {
             setUser(null);
           }
+
           return;
         }
 

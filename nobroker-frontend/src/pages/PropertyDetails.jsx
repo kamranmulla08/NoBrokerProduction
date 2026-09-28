@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/useAuth";
+import { API_BASE_URL } from "../services/api";
 import { getPropertyImageUrl } from "../utils/propertyMedia";
 import "./PropertyDetails.css";
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://nobroker-backend-iroo.onrender.com").replace(/\/$/, "");
 
 function PropertyDetails() {
   const { id } = useParams();
@@ -228,8 +227,10 @@ function PropertyDetails() {
 
       <main className="property-details-page">
         <div className="property-details-container">
-
-          <nav className="details-breadcrumb" aria-label="Breadcrumb">
+          <nav
+            className="details-breadcrumb"
+            aria-label="Breadcrumb"
+          >
             <Link to="/">Home</Link>
             <span>/</span>
             <Link to="/properties">Properties</Link>
@@ -237,15 +238,18 @@ function PropertyDetails() {
             <span>{property.title}</span>
           </nav>
 
-          {/* Property Image Gallery */}
-          <section className="property-gallery" aria-label="Property photos">
-
+          <section
+            className="property-gallery"
+            aria-label="Property photos"
+          >
             <div className="main-image-container">
-
-              {images.length > 0 && !failedImages[activeImage] ? (
+              {images.length > 0 &&
+              !failedImages[activeImage] ? (
                 <>
                   <img
-                    src={getPropertyImageUrl(images[activeImage].image)}
+                    src={getPropertyImageUrl(
+                      images[activeImage].image
+                    )}
                     alt={property.title}
                     className="main-property-image"
                     onError={() =>
@@ -285,12 +289,10 @@ function PropertyDetails() {
                   No images available
                 </div>
               )}
-
             </div>
 
             {images.length > 1 && (
               <div className="thumbnail-container">
-
                 {images.map((image, index) => (
                   <button
                     key={image.id}
@@ -304,7 +306,9 @@ function PropertyDetails() {
                     }
                   >
                     {failedImages[index] ? (
-                      <span className="thumbnail-placeholder">No image</span>
+                      <span className="thumbnail-placeholder">
+                        No image
+                      </span>
                     ) : (
                       <img
                         src={getPropertyImageUrl(image.image)}
@@ -320,21 +324,21 @@ function PropertyDetails() {
                     )}
                   </button>
                 ))}
-
               </div>
             )}
-
           </section>
 
-          {/* Property Information */}
           <section className="property-info">
-
             <div className="property-header">
-
               <div>
-                <span className="property-type">{property.property_type}</span>
+                <span className="property-type">
+                  {property.property_type}
+                </span>
+
                 <span className="listing-type">
-                  {property.listing_type === "RENT" ? "FOR RENT" : "FOR SALE"}
+                  {property.listing_type === "RENT"
+                    ? "FOR RENT"
+                    : "FOR SALE"}
                 </span>
               </div>
 
@@ -345,40 +349,68 @@ function PropertyDetails() {
               >
                 {property.availability_status}
               </span>
-
             </div>
 
             <h1>{property.title}</h1>
 
             <p className="property-location">
-              <span aria-hidden="true">⌖</span>{property.address || property.city}
+              <span aria-hidden="true">⌖</span>{" "}
+              {property.address || property.city}
             </p>
 
             <div className="property-price">
-              <strong>₹{Number(property.price).toLocaleString("en-IN")}</strong>
-              {property.listing_type === "RENT" && <span>per month</span>}
+              <strong>
+                ₹{Number(property.price).toLocaleString("en-IN")}
+              </strong>
+
+              {property.listing_type === "RENT" && (
+                <span>per month</span>
+              )}
             </div>
 
-            {/* Property Features */}
             <div className="property-features">
+              {property.bedrooms !== null &&
+                property.bedrooms !== undefined && (
+                  <div className="feature">
+                    <strong>{property.bedrooms}</strong>
+                    <span>Bedrooms</span>
+                  </div>
+                )}
 
-              {property.bedrooms !== null && property.bedrooms !== undefined && <div className="feature"><strong>{property.bedrooms}</strong><span>Bedrooms</span></div>}
-              {property.bathrooms !== null && property.bathrooms !== undefined && <div className="feature"><strong>{property.bathrooms}</strong><span>Bathrooms</span></div>}
-              {property.area !== null && property.area !== undefined && <div className="feature"><strong>{property.area}</strong><span>sq ft</span></div>}
-              {property.property_type && <div className="feature"><strong>{property.property_type}</strong><span>Type</span></div>}
+              {property.bathrooms !== null &&
+                property.bathrooms !== undefined && (
+                  <div className="feature">
+                    <strong>{property.bathrooms}</strong>
+                    <span>Bathrooms</span>
+                  </div>
+                )}
 
+              {property.area !== null &&
+                property.area !== undefined && (
+                  <div className="feature">
+                    <strong>{property.area}</strong>
+                    <span>sq ft</span>
+                  </div>
+                )}
+
+              {property.property_type && (
+                <div className="feature">
+                  <strong>{property.property_type}</strong>
+                  <span>Type</span>
+                </div>
+              )}
             </div>
 
-            {/* Description */}
-            {property.description && <div className="property-description"><h2>Description</h2><p>{property.description}</p></div>}
+            {property.description && (
+              <div className="property-description">
+                <h2>Description</h2>
+                <p>{property.description}</p>
+              </div>
+            )}
 
-            {/* Owner Information */}
             {property.owner_details && (
               <div className="property-owner">
-
-                <h2>
-                  Property Owner
-                </h2>
+                <h2>Property Owner</h2>
 
                 <p>
                   <strong>
@@ -390,13 +422,10 @@ function PropertyDetails() {
                   Role:{" "}
                   {property.owner_details.role}
                 </p>
-
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="property-actions">
-
               <button
                 className="interest-button"
                 onClick={handleInterest}
@@ -416,25 +445,20 @@ function PropertyDetails() {
                   ? "Opening Chat..."
                   : "Chat with Owner"}
               </button>
-
             </div>
 
-            {/* Success Message */}
             {interestMessage && (
               <div className="interest-success">
                 {interestMessage}
               </div>
             )}
 
-            {/* Error Message */}
             {interestError && (
               <div className="interest-error">
                 {interestError}
               </div>
             )}
-
           </section>
-
         </div>
       </main>
     </>

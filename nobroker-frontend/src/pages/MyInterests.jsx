@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { API_BASE_URL } from "../services/api";
 import "./MyInterests.css";
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://nobroker-backend-iroo.onrender.com").replace(/\/$/, "");
 
 function MyInterests() {
   const [interests, setInterests] = useState([]);
@@ -70,13 +69,16 @@ function MyInterests() {
 
       <main className="my-interests-page">
         <div className="my-interests-container">
-
           <div className="page-header">
             <h1>My Interests</h1>
+
             <p>
               Properties you have shown interest in.
             </p>
-            <Link to="/deals">View deal history</Link>
+
+            <Link to="/deals">
+              View deal history
+            </Link>
           </div>
 
           {error && (
@@ -190,7 +192,6 @@ function MyInterests() {
               })}
             </div>
           )}
-
         </div>
       </main>
     </>
