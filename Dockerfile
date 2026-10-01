@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput
+RUN test -f /app/media/property_images/test_property_dggZb4I.png && \
+    python manage.py collectstatic --noinput
 
 EXPOSE 8000
 

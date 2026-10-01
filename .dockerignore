@@ -15,6 +15,7 @@ __pycache__
 staticfiles
 
 db.sqlite3
+railway_data.json
 
 node_modules
 dist

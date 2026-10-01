@@ -10,6 +10,7 @@ __pycache__/
 
 # Local databases
 db.sqlite3
+railway_data.json
 
 # Django generated/uploaded files
 media/
