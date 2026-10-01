@@ -19,7 +19,7 @@ function EditProperty() {
     if (!user || user.role !== "OWNER") return;
     (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/properties/${id}/`);
+        const response = await fetch(`${API_BASE_URL}/api/properties/${id}/`);
         const property = await response.json();
         if (!response.ok) throw new Error(property.detail || "Property not found.");
         if (property.owner !== user.id) throw new Error("You can only manage your own property.");
@@ -33,7 +33,7 @@ function EditProperty() {
   const save = async (event) => {
     event.preventDefault(); setSaving(true); setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/properties/${id}/`, { method: "PATCH", headers: headers(), body: JSON.stringify(formData) });
+      const response = await fetch(`${API_BASE_URL}/api/properties/${id}/`, { method: "PATCH", headers: headers(), body: JSON.stringify(formData) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || Object.values(data).flat()[0] || "Unable to save property.");
       navigate(`/properties/${id}`);
@@ -43,7 +43,7 @@ function EditProperty() {
     if (!window.confirm("Delete this property? Its images, interests, and conversations will also be deleted.")) return;
     setSaving(true); setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/properties/${id}/`, { method: "DELETE", headers: headers() });
+      const response = await fetch(`${API_BASE_URL}/api/properties/${id}/`, { method: "DELETE", headers: headers() });
       if (!response.ok) { const data = await response.json(); throw new Error(data.detail || "Unable to delete property."); }
       navigate("/owner-dashboard");
     } catch (requestError) { setError(requestError.message); } finally { setSaving(false); }

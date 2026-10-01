@@ -5,6 +5,40 @@ import { API_BASE_URL } from "../services/api";
 import Navbar from "../components/Navbar";
 import "./PostProperty.css";
 
+async function parseApiResponse(response, fallbackMessage) {
+  const responseText = await response.text();
+  let responseData = null;
+
+  if (responseText) {
+    try {
+      responseData = JSON.parse(responseText);
+    } catch {
+      responseData = null;
+    }
+  }
+
+  if (!response.ok) {
+    const details =
+      responseData && typeof responseData === "object"
+        ? Object.values(responseData).flat().find((value) => typeof value === "string")
+        : null;
+    const message =
+      responseData?.detail ||
+      (typeof responseData === "string" ? responseData : details) ||
+      `${fallbackMessage} (HTTP ${response.status}).`;
+
+    throw new Error(message);
+  }
+
+  if (!responseData || typeof responseData !== "object") {
+    throw new Error(
+      `${fallbackMessage}: the server returned an invalid response (HTTP ${response.status}).`
+    );
+  }
+
+  return responseData;
+}
+
 function PostProperty() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -88,7 +122,7 @@ function PostProperty() {
       }
 
       const propertyResponse = await fetch(
-        `${API_BASE_URL}/properties/`,
+        `${API_BASE_URL}/api/properties/`,
         {
           method: "POST",
           headers: {
@@ -110,25 +144,18 @@ function PostProperty() {
         }
       );
 
-      const propertyData = await propertyResponse.json();
-
-      if (!propertyResponse.ok) {
-        const firstError =
-          Object.values(propertyData).flat()[0];
-
-        throw new Error(
-          firstError || "Failed to create property."
-        );
-      }
+      const propertyData = await parseApiResponse(
+        propertyResponse,
+        "Failed to create property."
+      );
 
       // Upload images after property creation
       for (const image of images) {
         const imageData = new FormData();
-        imageData.append("property", propertyData.id);
         imageData.append("image", image);
 
         const imageResponse = await fetch(
-          `${API_BASE_URL}/properties/${propertyData.id}/images/`,
+          `${API_BASE_URL}/api/properties/${propertyData.id}/images/`,
           {
             method: "POST",
             headers: {
@@ -138,10 +165,15 @@ function PostProperty() {
           }
         );
 
-        if (!imageResponse.ok) {
-          console.error(
-            "Image upload failed:",
-            await imageResponse.text()
+        try {
+          await parseApiResponse(
+            imageResponse,
+            `Failed to upload ${image.name}.`
+          );
+        } catch (uploadError) {
+          throw new Error(
+            `The property was created, but ${uploadError.message}`,
+            { cause: uploadError }
           );
         }
       }
