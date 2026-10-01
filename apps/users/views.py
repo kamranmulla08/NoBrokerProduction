@@ -10,6 +10,24 @@ from .serializers import (
 )
 
 
+class UsersApiRootView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        return Response(
+            {
+                "message": "Users API is working",
+                "endpoints": {
+                    "register": "/api/users/register/",
+                    "login": "/api/users/login/",
+                    "token_refresh": "/api/users/token/refresh/",
+                    "me": "/api/users/me/",
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class RegisterView(APIView):
     permission_classes = []
 

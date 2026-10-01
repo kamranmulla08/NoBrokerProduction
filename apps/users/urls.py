@@ -4,10 +4,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import RegisterView, MyProfileView
+from .views import MyProfileView, RegisterView, UsersApiRootView
 
 
 urlpatterns = [
+    path("", UsersApiRootView.as_view(), name="users_api_root"),
+
     # User registration
     path("register/", RegisterView.as_view(), name="register"),
 
