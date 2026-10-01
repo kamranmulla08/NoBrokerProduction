@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 
@@ -10,7 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
+# ============================================================
 # Security
+# ============================================================
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
@@ -29,7 +32,9 @@ ALLOWED_HOSTS = [
 ]
 
 
+# ============================================================
 # Applications
+# ============================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -50,10 +55,10 @@ INSTALLED_APPS = [
 ]
 
 
+# ============================================================
 # Middleware
+# ============================================================
 
-# Keep CORS middleware near the top so it can add CORS headers
-# to normal responses as well as preflight requests.
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
@@ -72,13 +77,19 @@ MIDDLEWARE = [
 ]
 
 
+# ============================================================
+# URL / ASGI / WSGI
+# ============================================================
+
 ROOT_URLCONF = "config.urls"
 
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 
+# ============================================================
 # Templates
+# ============================================================
 
 TEMPLATES = [
     {
@@ -98,9 +109,11 @@ TEMPLATES = [
 ]
 
 
+# ============================================================
 # Database
+# ============================================================
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 if DATABASE_URL:
     DATABASES = {
@@ -114,37 +127,72 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME", "nobroker_db"),
-            "USER": os.getenv("DB_USER", "nobroker_user"),
-            "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "5433"),
+            "NAME": os.getenv(
+                "DB_NAME",
+                "nobroker_db",
+            ),
+            "USER": os.getenv(
+                "DB_USER",
+                "nobroker_user",
+            ),
+            "PASSWORD": os.getenv(
+                "DB_PASSWORD",
+                "",
+            ),
+            "HOST": os.getenv(
+                "DB_HOST",
+                "127.0.0.1",
+            ),
+            "PORT": os.getenv(
+                "DB_PORT",
+                "5433",
+            ),
         }
     }
 
 
+# ============================================================
+# Custom User Model
+# ============================================================
+
 AUTH_USER_MODEL = "users.User"
 
 
-# Password validation
+# ============================================================
+# Password Validation
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
 
 
+# ============================================================
 # Internationalization
+# ============================================================
 
 LANGUAGE_CODE = "en-us"
 
@@ -154,9 +202,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files
+# ============================================================
+# Static Files
+# ============================================================
 
 STATIC_URL = "/static/"
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = (
@@ -164,16 +215,25 @@ STATICFILES_STORAGE = (
 )
 
 
-# Media files
+# ============================================================
+# Media Files
+# ============================================================
 
 MEDIA_URL = "/media/"
+
 MEDIA_ROOT = BASE_DIR / "media"
 
+
+# ============================================================
+# Default Primary Key
+# ============================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# ============================================================
 # CORS
+# ============================================================
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
@@ -188,7 +248,9 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+# ============================================================
 # CSRF
+# ============================================================
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
@@ -203,7 +265,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+# ============================================================
 # Django REST Framework
+# ============================================================
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -219,7 +283,9 @@ REST_FRAMEWORK = {
 }
 
 
+# ============================================================
 # Redis
+# ============================================================
 
 REDIS_URL = os.getenv(
     "REDIS_URL",
@@ -227,25 +293,25 @@ REDIS_URL = os.getenv(
 )
 
 
+# ============================================================
 # Django Channels
+# ============================================================
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                {
-                    "address": REDIS_URL,
-                    "socket_timeout": 30,
-                    "socket_connect_timeout": 30,
-                },
+                REDIS_URL,
             ],
         },
     },
 }
 
 
-# Proxy and HTTPS settings
+# ============================================================
+# Proxy / HTTPS Settings
+# ============================================================
 
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
